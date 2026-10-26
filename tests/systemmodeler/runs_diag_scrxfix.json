@@ -1,0 +1,44 @@
+{
+ "runs": [
+  {
+   "id": "SCRX9_vs_SCRX__dassl",
+   "model": "OpenIPSL.Tests.Controls.IEEE_CIGRE.SCRX9.SCRX9_vs_SCRX",
+   "solver": "dassl",
+   "interval": 0.005,
+   "stop": 10,
+   "tolerance": 1e-06,
+   "grid": 0.001,
+   "signals": [
+    "dll.sCRX9.EFD",
+    "dll.gENROU.w",
+    "dll.gENROU.ETERM",
+    "dll.GEN1.v",
+    "native.sCRX.EFD",
+    "native.gENROU.w",
+    "native.gENROU.ETERM",
+    "native.GEN1.v"
+   ],
+   "first_disturbance": 2.0025
+  },
+  {
+   "id": "SCRX__dassl",
+   "model": "OpenIPSL.Tests.Controls.PSSE.ES.SCRX",
+   "solver": "dassl",
+   "interval": 0.005,
+   "stop": 10,
+   "tolerance": 1e-06,
+   "grid": 0.001,
+   "signals": [
+    "sCRX.EFD",
+    "gENROU.EFD",
+    "gENROU.w",
+    "gENROU.ETERM",
+    "GEN1.v",
+    "gENROU.PELEC"
+   ],
+   "first_disturbance": 2.0
+  }
+ ],
+ "library_commit": "1244ae93 with OpenIPSL/Electrical/Controls/PSSE/ES/SCRX.mo replaced by the file of b48d49e8 (fix/scrx-start-value, decision D.2's separate pull request); DIAGNOSTIC, not a contract run",
+ "_comment": "Diagnostic, not contract runs: the two native-SCRX runs on a copy of the package with OpenIPSL/Electrical/Controls/PSSE/ES/SCRX.mo replaced by the file of b48d49e8 (as the Windows round-2 runs_diag_scrxfix.json)."
+}
