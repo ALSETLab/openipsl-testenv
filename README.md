@@ -98,6 +98,15 @@ function at translation time. Step 30 installs `/opt/openipsl-kit/bin/g++-nopie`
 executables with `-no-pie`. Name it with `setCompilerPath("/opt/openipsl-kit/bin/g++-nopie")` in a kernel `.mos`,
 or as the compiler in Model Center's options. Wolfram tests System Modeler with GCC 8.5, which does not default to PIE.
 
+Reported to Wolfram on 2026-10-26; on 2026-10-27 Wolfram confirmed it and announced a position-independent
+`libserializer` for the next System Modeler version, calling the `-no-pie` wrapper a sensible workaround until then (record:
+`ALSETLab/openipsl-tool-reports`, `system-modeler/2026-10-26_evaluator-pie/`).
+
+**To do on the first System Modeler release after 15.0:** rerun `tests/systemmodeler/` with the default g++ (no
+`setCompilerPath`) and check that the evaluator links without the relocation error and that every model variable
+matches the wrapper's run. If it does, drop the wrapper from `provision/30_systemmodeler.sh` and the
+`setCompilerPath` lines, and rewrite this section and trap 1 of `tests/systemmodeler/README.md` as history.
+
 To reuse the environment on another computer of your own, `wsl --export openipsl-verify-24.04 <file>.tar` and
 `wsl --import` it there. The exported image contains the licensed tools, so it is for your own use only; anyone
 else follows the steps above with their own installers and licences.
