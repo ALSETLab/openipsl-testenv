@@ -4,16 +4,20 @@ Scripted environments in which the Modelica tools build and simulate OpenIPSL mo
 binaries of the IEEE/CIGRE DLL package (OpenIPSL branch `feature/ieee-cigre-dll`, pull request #433), one folder per
 platform, so that each verification record can be repeated. No vendor software is included. License: BSD 3-Clause
 (`LICENSE`). Repository: https://github.com/ALSETLab/openipsl-testenv (private for now; until 2026-10-31 named
-`openipsl-linux-testenv`, which GitHub redirects).
+`openipsl-linux-testenv`, which GitHub redirects). Each platform folder has its own README with the scripts, the
+reproduction commands and the traps measured; the Raspberry Pi folder also has `SETUP.md`, which starts from an
+empty microSD card (image, SSH, provisioning).
 
 | Platform | Folder | Tools | First used | Record |
 |---|---|---|---|---|
 | Linux x86-64 (Ubuntu 24.04 in WSL2) | this folder (`provision/`, `tests/`, `windows/`) | Dymola, OpenModelica, System Modeler | 2026-10-25 | `LINUX_VERIFICATION.md` in the records |
 | macOS Apple Silicon (arm64) | [`macos/`](macos/README.md) | System Modeler, OpenModelica built from source | 2026-10-31 | `ARM_MACOS_VERIFICATION.md` in the records; release `arm-macos-2026-10-31` holds the omc build, the MSL and the raw results |
-| Linux aarch64 (Raspberry Pi 400, Raspberry Pi OS trixie) | [`raspberrypi/`](raspberrypi/README.md) | OpenModelica 1.27.2 from the OpenModelica arm64 apt repository (no System Modeler or Dymola for Linux arm64) | 2026-11-01 | `ARM_LINUX_AARCH64_VERIFICATION.md` in the records and a copy in the folder |
+| Linux aarch64 (Raspberry Pi 400, Raspberry Pi OS trixie) | [`raspberrypi/`](raspberrypi/README.md), machine setup in [`raspberrypi/SETUP.md`](raspberrypi/SETUP.md) | OpenModelica 1.27.2 from the OpenModelica arm64 apt repository, gcc 14 and clang 19 builds, plus a 32-bit `armhf` cross build (`scripts/armhf/`); no System Modeler or Dymola for Linux arm64 | 2026-11-01 | `ARM_LINUX_AARCH64_VERIFICATION.md` in the records and a copy in the folder |
 
-The platforms share the run list, the CSV contract and the metrics fields, so the records compare run by run. The
-rest of this file is the Linux kit.
+The platforms share the run list, the CSV contract and the metrics fields, so the records compare run by run.
+
+Where to start: Linux x86-64, the Steps section below; macOS, `macos/README.md`; Raspberry Pi, `raspberrypi/SETUP.md`
+for a Pi that is not yet imaged and provisioned, then `raspberrypi/README.md`. The rest of this file is the Linux kit.
 
 # OpenIPSL Linux verification kit
 
@@ -138,6 +142,9 @@ tests/smoke/                   distro, shipped libraries, one smoke test per too
 tests/dymola/, tests/openmodelica/, tests/systemmodeler/
                                the full IEEE/CIGRE test set per tool (each folder has its README)
 site.env.example               the site settings template (copy to site.env, which git ignores)
+macos/                         the macOS Apple Silicon kit (its README, scripts, patches, environment record)
+raspberrypi/                   the Raspberry Pi (Linux aarch64) kit: SETUP.md, README, scripts (with armhf/),
+                               patches, env, and a copy of its verification record
 ```
 
 ## Removing it
