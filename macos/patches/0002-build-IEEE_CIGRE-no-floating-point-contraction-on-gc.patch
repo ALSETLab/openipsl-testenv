@@ -1,0 +1,48 @@
+From 18e920d1cd1fbe9bcac6e971d971d48cac404c50 Mon Sep 17 00:00:00 2001
+From: Luigi Vanfretti <luigi.vanfretti@gmail.com>
+Date: Sat, 31 Oct 2026 18:16:27 -0400
+Subject: [PATCH 2/3] build(IEEE_CIGRE): no floating-point contraction on gcc
+ and clang
+
+On 64-bit ARM every compiler has fused multiply-add instructions and clang
+contracts a*b+c into them by default, so the DLL's C code rounds once where
+the x86-64 builds round twice. Measured with System Modeler 14.3 on Apple
+Silicon: the start-up transient of GFM_GFL_IBR amplifies those last-bit
+differences into a different trajectory (out[6] off by 0.38 pu at 5.9 ms, P
+by up to 26 MW on the 10 MVA base in the first 0.4 s of the GFL tests, extra
+current-zero events), whereas with -ffp-contract=off the ARM run equals the
+Windows round-2 result to 2e-9 relative, the same order as Linux x86-64
+against Windows. SCRX9 and the network-only tests were unaffected.
+-ffp-contract=off is added for every non-MSVC compiler; MSVC does not
+contract under its default /fp:precise.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ .../Resources/C-Sources/IEEE_CIGRE/CMakeLists.txt     | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/OpenIPSL/Resources/C-Sources/IEEE_CIGRE/CMakeLists.txt b/OpenIPSL/Resources/C-Sources/IEEE_CIGRE/CMakeLists.txt
+index 7d05be0d..1ad8aae0 100644
+--- a/OpenIPSL/Resources/C-Sources/IEEE_CIGRE/CMakeLists.txt
++++ b/OpenIPSL/Resources/C-Sources/IEEE_CIGRE/CMakeLists.txt
+@@ -82,6 +82,17 @@ else()
+   set(_oipsl_warnings -Wall -Wextra)
+ endif()
+ 
++# No floating-point contraction: clang (and gcc outside ISO C mode) fuses a*b+c into one fused multiply-add
++# wherever the target has it (every 64-bit ARM; x86-64 only with -mfma). The fused result is rounded once
++# instead of twice, so the same C source gives different last bits on ARM and on x86-64. Measured on Apple
++# Silicon (2026-10-31): GFM_GFL_IBR's start-up transient amplifies that to a visibly different trajectory
++# (P off by up to 2.6 Sbase in the first 0.4 s of the GFL tests, several extra current-zero events), while with
++# -ffp-contract=off the ARM results equal the x86-64 ones to 2e-9 relative, the same as Linux against Windows.
++# MSVC does not contract under its default /fp:precise.
++if(NOT MSVC)
++  list(APPEND _oipsl_warnings -ffp-contract=off)
++endif()
++
+ # oipsl_target_settings(<target>): reproducible MSVC builds (/Brepro: no time stamps in the PE files, so a
+ # rebuild of the same sources gives bit-identical DLLs and import libraries)
+ function(oipsl_target_settings target)
+-- 
+2.54.0 (Apple Git-157)
+

@@ -1,3 +1,19 @@
+# OpenIPSL verification kits
+
+Scripted environments in which the Modelica tools build and simulate OpenIPSL models with the `Resources/Library`
+binaries of the IEEE/CIGRE DLL package (OpenIPSL branch `feature/ieee-cigre-dll`, pull request #433), one folder per
+platform, so that each verification record can be repeated. No vendor software is included. License: BSD 3-Clause
+(`LICENSE`). Repository: https://github.com/ALSETLab/openipsl-testenv (private for now; until 2026-10-31 named
+`openipsl-linux-testenv`, which GitHub redirects).
+
+| Platform | Folder | Tools | First used | Record |
+|---|---|---|---|---|
+| Linux x86-64 (Ubuntu 24.04 in WSL2) | this folder (`provision/`, `tests/`, `windows/`) | Dymola, OpenModelica, System Modeler | 2026-10-25 | `LINUX_VERIFICATION.md` in the records |
+| macOS Apple Silicon (arm64) | [`macos/`](macos/README.md) | System Modeler, OpenModelica built from source | 2026-10-31 | `ARM_MACOS_VERIFICATION.md` in the records; release `arm-macos-2026-10-31` holds the omc build, the MSL and the raw results |
+
+The platforms share the run list, the CSV contract and the metrics fields, so the records compare run by run. The
+rest of this file is the Linux kit.
+
 # OpenIPSL Linux verification kit
 
 A scripted Linux environment, inside WSL2 on Windows, in which three Modelica tools build and simulate OpenIPSL
@@ -6,11 +22,11 @@ package (OpenIPSL branch `feature/ieee-cigre-dll`, replacing pull request #362),
 OpenIPSL model that needs Linux runs.
 
 Kit version: see `VERSION`. Status: draft 0.1.0, first used on 2026-10-25 for the Linux verification of the
-IEEE/CIGRE DLL package. Repository: https://github.com/ALSETLab/openipsl-linux-testenv (private for now).
+IEEE/CIGRE DLL package. Repository: the top folder of https://github.com/ALSETLab/openipsl-testenv.
 License: BSD 3-Clause (`LICENSE`). No vendor software is included: you bring your own installers and licences.
 
 Commands below use these placeholders: `<kit>` is this folder as seen from WSL (for example
-`/mnt/c/git/openipsl-linux-testenv`), `<commit>` an OpenIPSL commit, `<records>` the folder that receives the
+`/mnt/c/git/openipsl-testenv`), `<commit>` an OpenIPSL commit, `<records>` the folder that receives the
 verification record, `<windows records>` and `<windows raw>` the optional Windows record to compare with
 (`WINDOWS_RECORD_ROOT`, `WINDOWS_RAW_ROOT` in `site.env`).
 

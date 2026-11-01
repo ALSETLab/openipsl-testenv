@@ -3,3 +3,5 @@ site.env
 # Step logs of a provisioning run (copied into the verification record when they matter).
 logs/
 __pycache__/
+*.pyc
+.DS_Store
