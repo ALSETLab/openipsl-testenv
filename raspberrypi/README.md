@@ -4,12 +4,14 @@ This folder is the Raspberry Pi twin of `macos/`. It holds the scripts, patches 
 2026-11-01 for the OpenModelica-only verification of OpenIPSL pull request #433 (branch `feature/ieee-cigre-dll`,
 head `b05fa04440809291d61f13045f8586d186613f66`) on a Raspberry Pi 400 running Raspberry Pi OS 64-bit (Debian 13
 trixie). Wolfram ships no System Modeler for Linux arm64, so this machine has no System Modeler column. The record
-is `ARM_LINUX_AARCH64_VERIFICATION.md`; on the Pi it is at `~/arm-verify/`.
+is `ARM_LINUX_AARCH64_VERIFICATION.md`; on the Pi it is at `~/arm-verify/`. Start with `SETUP.md` if the Pi is not yet imaged
+and provisioned.
 
 ## Contents
 
 | Path | What it is |
 |---|---|
+| `SETUP.md` | How to image a card with 64-bit Raspberry Pi OS, reach the Pi by SSH key from a desktop and run `provision_pi.sh`: the steps before anything below, written for a reader who starts from an empty card |
 | `scripts/provision_pi.sh` | Provisioning of a fresh 64-bit Raspberry Pi OS image (needs sudo once): build tools, OpenModelica 1.27.2 from `build.openmodelica.org/apt trixie stable` (packages `omc omlibrary`), first MSL load |
 | `scripts/make_pkg.sh` | Package under test: a `git archive` of the checkout's HEAD, plus the installed `Resources/Library/aarch64-linux`, plus a `COMMIT` file |
 | `scripts/probe_folders.sh`, `scripts/folder_probe.c`, `scripts/FolderProbe/package.mo` | Which `Resources/Library/<folder>` omc links and loads. Eight layouts; each copy of `libFolderProbe.so` returns its own folder number |
