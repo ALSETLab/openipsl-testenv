@@ -286,6 +286,12 @@ D.4 **Kit folder.** `kit-raspberrypi/` is ready as the `raspberrypi/` folder of 
     shape as `macos/`: `README.md`, `scripts/`, `patches/`, `env/`). Proposed: add it in the same push as the macOS
     folder; nothing is pushed until you say so.
 
+Decisions taken by Luigi, 2026-11-01 (after the first version of this record): D.1 yes, D.2 yes, D.3 yes, D.4 yes, each
+as proposed above. Patches 0001 and 0002 stay on the branch `arm-platform-folders`, with the README note on
+`-ffp-contract=off` for builds outside CMake going into the follow-up pull request; OpenModelica 1.27.2 is the Pi's
+reference; `kit-raspberrypi/` goes into `ALSETLab/openipsl-testenv` as `raspberrypi/` together with `macos/`. All of
+it goes in the single push Luigi decides after the ARM process; nothing is pushed yet.
+
 ## 11. Files of this record (all under `/home/<pi-user>/arm-verify/`)
 
 - `ARM_LINUX_AARCH64_VERIFICATION.md` (this file); `ENVIRONMENT_2026-11-01.txt`.
