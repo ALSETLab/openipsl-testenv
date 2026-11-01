@@ -10,6 +10,7 @@ platform, so that each verification record can be repeated. No vendor software i
 |---|---|---|---|---|
 | Linux x86-64 (Ubuntu 24.04 in WSL2) | this folder (`provision/`, `tests/`, `windows/`) | Dymola, OpenModelica, System Modeler | 2026-10-25 | `LINUX_VERIFICATION.md` in the records |
 | macOS Apple Silicon (arm64) | [`macos/`](macos/README.md) | System Modeler, OpenModelica built from source | 2026-10-31 | `ARM_MACOS_VERIFICATION.md` in the records; release `arm-macos-2026-10-31` holds the omc build, the MSL and the raw results |
+| Linux aarch64 (Raspberry Pi 400, Raspberry Pi OS trixie) | [`raspberrypi/`](raspberrypi/README.md) | OpenModelica 1.27.2 from the OpenModelica arm64 apt repository (no System Modeler or Dymola for Linux arm64) | 2026-11-01 | `ARM_LINUX_AARCH64_VERIFICATION.md` in the records and a copy in the folder |
 
 The platforms share the run list, the CSV contract and the metrics fields, so the records compare run by run. The
 rest of this file is the Linux kit.

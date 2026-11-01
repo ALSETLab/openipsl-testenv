@@ -1,0 +1,102 @@
+# Linux aarch64 (Raspberry Pi 400) environment of the IEEE/CIGRE DLL verification, recorded 2026-11-01T01:36:05-05:00
+$ uname -a
+Linux raspberrypi 6.18.50+rpt-rpi-v8 #1 SMP PREEMPT Debian 1:6.18.50-1+rpt1 (2026-09-11) aarch64 GNU/Linux
+$ grep -E '^(PRETTY_NAME|VERSION_ID|VERSION_CODENAME)=' /etc/os-release
+PRETTY_NAME="Debian GNU/Linux 13 (trixie)"
+VERSION_ID="13"
+VERSION_CODENAME=trixie
+$ cat /etc/rpi-issue 2>/dev/null | head -3
+Raspberry Pi reference 2026-10-06
+Generated using pi-gen, https://github.com/RPi-Distro/pi-gen, b2cd98a9ee08a31ef7d0110ed09f2492bbd972ec, stage4
+$ tr -d '\0' < /proc/device-tree/model; echo
+Raspberry Pi 400 Rev 1.0
+$ lscpu | grep -E 'Model name|Architecture|^CPU\(s\)|max MHz|Flags'
+Architecture:                            aarch64
+CPU(s):                                  4
+Model name:                              Cortex-A72
+CPU(s) scaling MHz:                      100%
+CPU max MHz:                             1800.0000
+Flags:                                   fp asimd evtstrm crc32 cpuid
+$ free -h
+               total        used        free      shared  buff/cache   available
+Mem:           3.7Gi       1.0Gi       214Mi        30Mi       2.6Gi       2.7Gi
+Swap:          2.0Gi          0B       2.0Gi
+$ df -h / | tail -1
+/dev/mmcblk0p2   58G   16G   40G  29% /
+$ ldd --version | head -1
+ldd (Debian GLIBC 2.41-12+rpt1+deb13u4) 2.41
+$ gcc --version | head -1
+gcc (Debian 14.2.0-19) 14.2.0
+$ clang --version | head -1
+Debian clang version 19.1.7 (3+b1)
+$ cmake --version | head -1
+cmake version 3.31.6
+$ ninja --version
+1.12.1
+$ python3 --version
+Python 3.13.5
+$ python3 -c 'import numpy; print("numpy", numpy.__version__)'
+numpy 2.2.4
+$ python3 -c 'import matplotlib' 2>&1 | tail -1
+ModuleNotFoundError: No module named 'matplotlib'
+$ git --version
+git version 2.47.3
+$ which omc; omc --version
+/usr/bin/omc
+OpenModelica 1.27.2
+$ dpkg -l | awk '/^ii/ && $2 ~ /^(omc|omc-common|libomc|libomcsimulation|omlibrary|clang|clang-19|liblapack3|libblas3|wolfram-engine)(:arm64)?$/ {print $2, $3}'
+clang 1:19.0-63
+clang-19 1:19.1.7-3+b1
+libblas3:arm64 3.12.1-6
+liblapack3:arm64 3.12.1-6
+libomc:arm64 1.27.2-1
+libomcsimulation:arm64 1.27.2-1
+omc 1.27.2-1
+omc-common 1.27.2-1
+omlibrary 1.27.2-1
+wolfram-engine 15.0.1+202608182322
+$ apt-cache policy omc 2>/dev/null | head -8
+omc:
+  Installed: 1.27.2-1
+  Candidate: 1.27.2-1
+  Version table:
+ *** 1.27.2-1 500
+        500 https://build.openmodelica.org/apt trixie/stable arm64 Packages
+        100 /var/lib/dpkg/status
+$ ls ~/.openmodelica/libraries
+Complex 4.0.0+maint.om
+Complex 4.1.0+maint.om
+index.json
+Modelica 3.2.3+maint.om
+Modelica 4.0.0+maint.om
+Modelica 4.1.0+maint.om
+ModelicaReference 4.0.0+maint.om
+ModelicaReference 4.1.0+maint.om
+ModelicaServices 4.0.0+maint.om
+ModelicaServices 4.1.0+maint.om
+ObsoleteModelica4 4.0.0+maint.om
+ObsoleteModelica4 4.1.0+maint.om
+$ ls /opt/Wolfram/WolframEngine 2>/dev/null; ls /opt/Wolfram 2>/dev/null
+15.0
+WolframEngine
+$ ls /opt/Wolfram/WolframEngine/15.0/SystemFiles/Kernel/Binaries 2>/dev/null; find /opt/Wolfram -maxdepth 4 -iname '*SystemModeler*' -o -maxdepth 4 -iname 'WSMKernel*' 2>/dev/null | head
+Linux-ARM64
+$ ~/.local/bin/claude --version
+2.1.316 (Claude Code)
+$ sudo -n true 2>&1 | head -1
+sudo: a password is required
+$ OpenIPSL
+deeb1fa7150467b4914b8a39107c70fd1f3c5aaf 2026-11-01 01:27:07 -0500 Luigi Vanfretti | build(IEEE_CIGRE): macOS install names and the arm64-darwin link for OpenModelica
+f2e201d21e15d76c9a43d95d87737644717bdc60 2026-11-01 01:27:07 -0500 Luigi Vanfretti | build(IEEE_CIGRE): no floating-point contraction on gcc and clang
+9ad851731d5169401404ca96722c798707141cf4 2026-11-01 01:27:07 -0500 Luigi Vanfretti | build(IEEE_CIGRE): platform folders aarch64-linux and aarch64-darwin on 64-bit ARM
+b05fa04440809291d61f13045f8586d186613f66 2026-10-28 22:42:02 -0400 Luigi V. | fix(IEEE_CIGRE): adapter passes empty message strings, not NULL, to the model
+arm-platform-folders
+$ libraries
+f163158fe14205e09a20a4b8d0dfd4de7279c1c7f49cf84b35b91d9729a5a433  OpenIPSL/OpenIPSL/Resources/Library/aarch64-linux/libGFM_GFL_IBR.so
+dbab0750e40f1657ea7af55a2bb32768caeb996dce628b515a007d2136ad8e28  OpenIPSL/OpenIPSL/Resources/Library/aarch64-linux/libSCRX9.so
+total 148
+-rw-r--r-- 1 luigi luigi 75160 Nov  1 01:27 libGFM_GFL_IBR.so
+-rw-r--r-- 1 luigi luigi 72328 Nov  1 01:27 libSCRX9.so
+$ vcgencmd (throttling)
+throttled=0x0
+temp=45.2'C
