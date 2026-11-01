@@ -7,7 +7,9 @@ verification), working folder `/home/<pi-user>/arm-verify/` on the Pi.
 Package under test: OpenIPSL branch `feature/ieee-cigre-dll`, head `b05fa04440809291d61f13045f8586d186613f66`
 (pull request #433), cloned to `/home/<pi-user>/arm-verify/OpenIPSL/`, plus the three commits of the macOS record applied with
 `git am` on the local branch `arm-platform-folders` (`9ad85173`, `f2e201d2`, `deeb1fa7`; the same patches as macOS's
-`f457b90f`, `18e920d1`, `54f983e7`, new hashes because `git am` writes a new committer date; nothing pushed).
+`f457b90f`, `18e920d1`, `54f983e7`, new hashes because `git am` writes a new committer date; nothing pushed). The runs
+used `deeb1fa7`. After Luigi's D.5 (section 11.3) the branch is `ef959d5c`, `100b475e`, `3f3901c5`: 0001 gains a
+64-bit test, and the aarch64 libraries it builds are byte-identical to the record's.
 References, read only: the Windows round-2 record (`records/report/verification_round2/`), the Linux x86_64 record
 (`records/report/linux/`) and the macOS arm64 record (`records/iterations/2026-10-31_I9-arm-verification/macos/`, its
 15 OpenModelica CSVs and metrics in `.../macos/raw/openmodelica/` and its `comparison_final/comparison_arm.json`).
@@ -28,7 +30,9 @@ CMake build does not contract `a*b+c` (gcc in ISO C mode), so patch 0002 changes
 mode does, and that build sends GFL_VoltageStep to a different operating point (P -9.2 instead of 5.0 MW, f 62.5 Hz at
 3 s): patch 0002 protects against a real failure, not a cosmetic one. The Pi is 7.5 to 13.9 times slower than the
 Linux x86_64 host in simulation (median 12.0). No System Modeler (none exists for Linux arm64). Decisions D.1 to D.4
-at the end; nothing is pushed.
+at the end, all decided yes on 2026-11-01. Addendum (section 11): clang 19 gives CSVs byte-identical to gcc's with
+patch 0002 and contracts without it; an armhf cross build passes its C tests and showed that 0001 needed a 64-bit test
+(D.5, amended and pushed in #433 `053f0a75`); OpenModelica for armhf searches `arm-linuxeabihf` (not supported).
 
 ## Key points
 
@@ -292,7 +296,87 @@ as proposed above. Patches 0001 and 0002 stay on the branch `arm-platform-folder
 reference; `kit-raspberrypi/` goes into `ALSETLab/openipsl-testenv` as `raspberrypi/` together with `macos/`. All of
 it goes in the single push Luigi decides after the ARM process; nothing is pushed yet.
 
-## 11. Files of this record (all under `/home/<pi-user>/arm-verify/`)
+## 11. Addendum, 2026-11-01 afternoon: clang on the Pi and 32-bit ARM (armhf), Luigi's item 4
+
+### 11.1 armhf (source: `raw/build/{configure,build,ctest}_log_armhf*.txt`, `build/fma_variants_armhf/`, `build/omc_armhf/`)
+
+No armhf C library is installed and no sudo was used. The armhf `.deb` files of `libc6`, `libc6-dev`, `libgcc-14-dev`
+and `libgcc-s1` (Debian/Raspberry Pi trixie, fetched with `apt-get download`) and `lld-19` were unpacked into
+`build/armhf_sysroot/` (nothing installed system-wide); clang 19 cross-compiles with
+`build/armhf_sysroot/toolchain_armhf.cmake` (`--target=arm-linux-gnueabihf -march=armv7-a -mfpu=neon-vfpv4
+-mfloat-abi=hard`), and `run_armhf.sh` runs the 32-bit programs through the unpacked loader (the kernel has
+`CONFIG_COMPAT=y`).
+
+1. Build and tests: the CMake project builds for armhf (125 warnings, the same vendor set as clang on aarch64), two
+   "ELF 32-bit LSB shared object, ARM, EABI5" libraries depending on `libm.so.6` and `libc.so.6`, and 6 of 6 C tests
+   pass as 32-bit programs (`adapter_test`, `layout_test`, `two_libraries_test` in both orders).
+2. Contraction: clang's default gives 76 `vfma`/`vfms`/`vfnma`/`vfnms` in `GFM_GFL_IBR` and 5 in `SCRX9` on armv7 with
+   VFPv4; patch 0002's `-ffp-contract=off` (present in the cross build's compile commands) gives 0.
+3. **Platform folder, a flaw in patch 0001 as first written (fixed by D.5, section 11.3).** With `CMAKE_SYSTEM_PROCESSOR` = `armv7l` (a 32-bit kernel) the project
+   installs into `linux32`. A 32-bit Raspberry Pi OS on a Pi 4 or 400 runs a 64-bit kernel by default, and a native
+   CMake there takes `uname -m` = `aarch64`: the same cross build with `CMAKE_SYSTEM_PROCESSOR` = `aarch64` installs
+   the 32-bit libraries into **`aarch64-linux`** (`raw/build/configure_log_armhf_k64.txt`), where an aarch64 omc would
+   then find 32-bit files. (Under `setarch linux32`, `uname -m` and CMake's host processor are `armv8l`.) The
+   aarch64 condition of `CMakeLists.txt:58` does not test `CMAKE_SIZEOF_VOID_P`.
+4. omc on armhf: the OpenModelica repository has `omc` 1.27.2 for armhf. Its `libomcruntime.so`
+   (`build/omc_armhf/`, `libomc_1.27.2-1_armhf.deb`, SHA-256 checked against the repository index) holds the
+   platform name **`arm-linuxeabihf`** at the place where the arm64 build holds `aarch64-linux` (the GNU triplet
+   `arm-linux-gnueabihf` with `-gnu` removed). So an armhf omc would search `Resources/Library/arm-linuxeabihf`, a
+   name that neither `linux32` nor `aarch64-linux` matches. Not run: running omc for armhf needs an armhf userland
+   (a 32-bit image, or sudo to add armhf packages), and whether it also searches `linux32` is not known.
+
+### 11.2 clang on aarch64 (source: `raw/build/*_log_clang.txt`, `build/fma_variants_clang/`, `raw/openmodelica/record_clang*/`)
+
+Debian clang 19.1.7 instead of gcc 14.2, otherwise the same CMake Release build (`build/ieee_cigre_clang`, `-O3 -std=c11
+-ffp-contract=off` from patch 0002, compile commands in its `compile_commands.json`): 6 of 6 tests, 125 warnings (121
+`-Wunused-variable`, 2 `-Wunused-parameter`, 2 `-Wunknown-warning-option` for the gcc-only pragma in
+`test/layout_test.c`, so no `-Wmaybe-uninitialized`), 12 exports per library.
+
+| clang 19 flags (`build/fma_variants_clang/fma_counts_clang.txt`) | fused in `GFM_GFL_IBR.o` | in `SCRX9.o` |
+|---|---|---|
+| `-O3 -std=c11` (clang's default contraction) | 77 | 5 |
+| `-O0 -std=c11` | 63 | 5 |
+| `-O3 -std=c11 -ffp-contract=off` (the CMake build) | 0 | 0 |
+
+So clang contracts in ISO C mode and at `-O0` on Linux too, as Apple clang does on macOS (75, 63 and 5 there); gcc
+does neither. Runs with OpenModelica 1.27.2, `run` step only, no timing pass (`raw/openmodelica/run_clang{,_fma}_nohup.log`):
+
+1. The 15 contract runs with the clang CMake build (`pkg/clang_off`, `raw/openmodelica/record_clang/`): 15 of 15 ok;
+   all 15 CSVs are **byte-identical** to the gcc record's, and 0 of the counters differ
+   (`record_clang/diff_vs_gcc_record.txt`). With contraction off, gcc 14 and clang 19 give the same doubles for every
+   contract signal at 10 significant digits.
+2. FMA control with clang's default build (`pkg/clang_fma`, `raw/openmodelica/record_clang_fma/`): GFL_Fault and
+   GFL_VoltageStep are byte-identical to the gcc `-std=gnu11` control of section 3 (the same 0.384 pu Iqref at 5.9 ms,
+   the same end state at 62.47 Hz), although clang fused 77 operations and gcc 76; SCRX9 differs from the gcc control
+   only at the CSV floor (1.1e-12 in `gENROU.w`) and equals the record to 1.1e-12.
+
+So the departures of section 3 are not a gcc matter: they follow from contraction itself, whichever compiler does it.
+Patch 0002 covers both compilers.
+
+### 11.3 D.5: the 64-bit test in patch 0001 (Luigi, 2026-11-01: "Yes, amend 0001")
+
+`CMakeLists.txt` now requires `CMAKE_SIZEOF_VOID_P EQUAL 8` for the `aarch64-<os>` names (plus a comment saying
+why), folded into commit 0001 by an autosquash rebase, with the reason added to its message. The branch
+`arm-platform-folders` is now `ef959d5c` (0001), `100b475e` (0002), `3f3901c5` (0003) on `b05fa044`; the patch files
+in `kit-raspberrypi/patches/` were regenerated with `git format-patch`. Configure check
+(`raw/build/configure_log_v0001_{native,armhf_armv7l,armhf_on_k64}.txt`):
+
+| build | install folder before | after |
+|---|---|---|
+| native aarch64 (gcc 14) | `aarch64-linux` | `aarch64-linux`; 6 of 6 tests; both `.so` byte-identical to the record build |
+| armhf, processor `armv7l` | `linux32` | `linux32` |
+| armhf, processor `aarch64` (64-bit kernel) | `aarch64-linux` (wrong) | `linux32` |
+
+The parent session pushed #433 from the desktop on Luigi's word: head `053f0a75` = `b05fa044` + `3da33828` (0001 with
+the same condition, comment worded differently) + `34985981` (0002) + `053f0a75` (0003); `git diff` against the local
+branch shows only that comment and the line wrap. The same three configure checks on `053f0a75`
+(`raw/build/configure_log_053f0a75_*.txt`) give `aarch64-linux`, `linux32`, `linux32`, 6 of 6 tests, and libraries
+byte-identical to the record build. The local branch `arm-platform-folders` is superseded and kept as a record only.
+
+An armhf omc would look in `arm-linuxeabihf` (section 11.1); supporting it would need that name as well, which is
+left out until someone needs OpenModelica on 32-bit ARM.
+
+## 12. Files of this record (all under `/home/<pi-user>/arm-verify/`)
 
 - `ARM_LINUX_AARCH64_VERIFICATION.md` (this file); `ENVIRONMENT_2026-11-01.txt`.
 - `OpenIPSL/` (the clone, branch `arm-platform-folders`, not pushed; `Resources/Library/aarch64-linux/` untracked);
@@ -312,3 +396,9 @@ it goes in the single push Luigi decides after the ARM process; nothing is pushe
 - `scripts/` (`omc_verify_pi.py`, `run_all_om_pi.sh`, `compare_arm.py`, `make_pkg.sh`, `probe_folders.sh`,
   `folder_probe.c`, `FolderProbe/`, `UnitProbe.mo`, `runs.json`, `fma_diff.py`).
 - `kit-raspberrypi/` (the future `raspberrypi/` folder of `ALSETLab/openipsl-testenv`).
+- Addendum (section 11): `build/ieee_cigre_clang/`, `build/fma_variants_clang/`, `pkg/clang_{off,fma}/`,
+  `raw/openmodelica/record_clang/`, `raw/openmodelica/record_clang_fma/`, `build/om_runs_clang{,_fma}/`;
+  `build/armhf_sysroot/` (the unpacked sysroot, `lld/`, toolchain files, `run_armhf.sh`), `build/ieee_cigre_armhf*/`,
+  `build/fma_variants_armhf/`, `build/omc_armhf/` (`libomc` armhf, unpacked); `build/v0001_*` and `build/u053f_*`
+  (folder checks of the amended 0001 and of the pushed `053f0a75`); `raw/build/*_{clang,armhf,armhf_k64,v0001_*,053f0a75_*}.txt`;
+  `scripts/fma_diff.py`, `kit-raspberrypi/scripts/armhf/`.

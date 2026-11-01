@@ -1,0 +1,13 @@
+# Cross build for 32-bit ARM (armhf) on the Pi's aarch64 userland: clang 19, a sysroot unpacked from the armhf .debs, lld 19 unpacked locally.
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_PROCESSOR armv7l)
+set(CMAKE_SYSROOT /home/<pi-user>/arm-verify/build/armhf_sysroot/root)
+set(CMAKE_C_COMPILER clang)
+set(CMAKE_C_COMPILER_TARGET arm-linux-gnueabihf)
+set(CMAKE_C_FLAGS_INIT "-march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=hard")
+set(CMAKE_EXE_LINKER_FLAGS_INIT "-fuse-ld=/home/<pi-user>/arm-verify/build/armhf_sysroot/lld/usr/lib/llvm-19/bin/ld.lld -Wl,--dynamic-linker=/usr/lib/ld-linux-armhf.so.3")
+set(CMAKE_SHARED_LINKER_FLAGS_INIT "-fuse-ld=/home/<pi-user>/arm-verify/build/armhf_sysroot/lld/usr/lib/llvm-19/bin/ld.lld")
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_CROSSCOMPILING_EMULATOR /home/<pi-user>/arm-verify/build/armhf_sysroot/run_armhf.sh)

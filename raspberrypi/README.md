@@ -16,11 +16,12 @@ and provisioned.
 | `scripts/make_pkg.sh` | Package under test: a `git archive` of the checkout's HEAD, plus the installed `Resources/Library/aarch64-linux`, plus a `COMMIT` file |
 | `scripts/probe_folders.sh`, `scripts/folder_probe.c`, `scripts/FolderProbe/package.mo` | Which `Resources/Library/<folder>` omc links and loads. Eight layouts; each copy of `libFolderProbe.so` returns its own folder number |
 | `scripts/omc_verify_pi.py`, `scripts/run_all_om_pi.sh` | The 15 contract runs plus checks, extras, timing, binding and self-comparison (port of the macOS `omc_verify_macos.py` / `run_all_om_macos.sh`; same run list, `.mos` text, signals, grids and metrics fields) |
+| `scripts/armhf/` | 32-bit ARM cross build without sudo: `make_sysroot.sh` (unpacks the armhf libc/libgcc `.deb` files and `lld-19`), `toolchain_armhf.cmake` (processor `armv7l`), `toolchain_armhf_on_aarch64_kernel.cmake` (processor `aarch64`, as a 32-bit userland on a 64-bit kernel reports), `run_armhf.sh` (ctest emulator through the unpacked loader) |
 | `scripts/UnitProbe.mo` | Negative controls for `--unitChecking` |
 | `scripts/runs.json` | The contract run list (reference copy; `omc_verify_pi.py` carries the same list in code) |
 | `scripts/fma_diff.py` | Worst difference per signal between two CSV records of the same runs (the FMA control against the record) |
 | `scripts/compare_arm.py` | Comparison against Windows round 2, Linux x86_64 and (with `--macos` / `--macos-json`) the macOS arm64 record. It imports `report/linux/compare_linux.py` from `<root>/records/report/linux/` |
-| `patches/0001..0003` | The three CMake commits of the ARM work (platform folders; `-ffp-contract=off`; macOS install names). Applied with `git am` on the local branch `arm-platform-folders` |
+| `patches/0001..0003` | The three CMake commits of the ARM work (platform folders; `-ffp-contract=off`; macOS install names). As pushed to #433 (`3da33828`, `34985981`, `053f0a75` on `b05fa044`, 2026-11-01); since then `git clone --branch feature/ieee-cigre-dll` already contains them, and `git am` is only needed on an older checkout |
 | `env/ENVIRONMENT_2026-11-01.txt` | Machine, OS, toolchain and package versions of the record run |
 | `ARM_LINUX_AARCH64_VERIFICATION.md` | The record (a copy of `~/arm-verify/ARM_LINUX_AARCH64_VERIFICATION.md`) |
 
@@ -77,3 +78,8 @@ folder, as for the Mac.
 9. **`claude` is on PATH only in login shells** (`~/.local/bin`, added by Debian's `.profile`).
 10. **No System Modeler for Linux arm64.** `wolfram-engine` 15.0.1 (Mathematica kernel) is installed, but it has no
     `WSMKernel` and cannot replace System Modeler.
+11. **32-bit ARM.** A 32-bit Raspberry Pi OS on a Pi 4/400 runs a 64-bit kernel and CMake reports `aarch64`; patch
+    0001 tests `CMAKE_SIZEOF_VOID_P` so such builds go to `linux32`, not `aarch64-linux`. omc for armhf (1.27.2)
+    searches `arm-linuxeabihf`, which the CMake project does not produce: OpenModelica on 32-bit ARM is not supported.
+12. **clang contracts by default** on Linux aarch64 too (77 fused instructions in GFM, 5 in SCRX9, also at `-O0`);
+    gcc does not in `-std=c11` mode. Patch 0002 covers both.

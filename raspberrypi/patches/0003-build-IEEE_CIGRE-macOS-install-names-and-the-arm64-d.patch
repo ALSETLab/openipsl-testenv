@@ -1,4 +1,4 @@
-From 54f983e756ffcdfc46bdaebc1e194ed5c847a9a0 Mon Sep 17 00:00:00 2001
+From 053f0a750f2763a54f27ad6167b6aeacfafeb269 Mon Sep 17 00:00:00 2001
 From: Luigi Vanfretti <luigi.vanfretti@gmail.com>
 Date: Sat, 31 Oct 2026 18:50:33 -0400
 Subject: [PATCH 3/3] build(IEEE_CIGRE): macOS install names and the
@@ -23,7 +23,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
  1 file changed, 19 insertions(+), 1 deletion(-)
 
 diff --git a/OpenIPSL/Resources/C-Sources/IEEE_CIGRE/CMakeLists.txt b/OpenIPSL/Resources/C-Sources/IEEE_CIGRE/CMakeLists.txt
-index 1ad8aae0..98675b21 100644
+index 4b2e66d9..12808ddf 100644
 --- a/OpenIPSL/Resources/C-Sources/IEEE_CIGRE/CMakeLists.txt
 +++ b/OpenIPSL/Resources/C-Sources/IEEE_CIGRE/CMakeLists.txt
 @@ -9,7 +9,12 @@
@@ -40,7 +40,7 @@ index 1ad8aae0..98675b21 100644
  #
  #   cmake -S . -B <build> -DCMAKE_BUILD_TYPE=Release
  #   cmake --build <build> --config Release
-@@ -121,6 +126,13 @@ function(oipsl_add_cigre_library name source)
+@@ -123,6 +128,13 @@ function(oipsl_add_cigre_library name source)
    if(UNIX)
      target_link_libraries(${name} PRIVATE m)
    endif()
@@ -54,7 +54,7 @@ index 1ad8aae0..98675b21 100644
    # ELF: -Bsymbolic binds the adapter's calls to the Model_* entry points of its own library. Every
    # IEEE/CIGRE library exports the same Model_* names; without it, ELF symbol interposition makes the adapter
    # of the second library loaded into a process call the Model_* functions of the first one. Windows DLLs
-@@ -180,4 +192,10 @@ foreach(_oipsl_order IN ITEMS scrx9_first gfm_first)
+@@ -182,4 +194,10 @@ foreach(_oipsl_order IN ITEMS scrx9_first gfm_first)
    add_test(NAME two_libraries_test_${_oipsl_order} COMMAND two_libraries_test_${_oipsl_order})
  endforeach()
  
@@ -66,5 +66,5 @@ index 1ad8aae0..98675b21 100644
 +
  message(STATUS "IEEE/CIGRE libraries install into ${CMAKE_INSTALL_PREFIX}/${OIPSL_INSTALL_DIR}")
 -- 
-2.54.0 (Apple Git-157)
+2.47.3
 
