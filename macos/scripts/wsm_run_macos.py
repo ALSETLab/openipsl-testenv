@@ -19,14 +19,16 @@ are unchanged. The platform parts:
      ~/Library/Preferences/com.wolfram.SystemModeler140303.plist do not reach it), and buildModel then returns
      {false,"",""} with no message after "Step 1 of 4". "--compiler default" reproduces that.
   3. The executable is <Short>.exe (the kernel keeps the suffix on macOS too). Its stdout and stderr go to two files.
-     The libraries' install names are @rpath/lib<Name>.dylib; whether the executable finds them by itself is measured
-     (otool -L, LC_RPATH, a launch with DYLD_PRINT_LIBRARIES and a non-existent .sim, with and without
-     DYLD_LIBRARY_PATH); unless --no-dyld-path, the directories of the .sim's <ExternalLibraries> are put on
-     DYLD_LIBRARY_PATH for the simulation (the Linux runner does the same with LD_LIBRARY_PATH).
+     With dylibs (the 2026-10-31 run, install names @rpath/lib<Name>.dylib) whether the executable finds them by
+     itself is measured (otool -L, LC_RPATH, a launch with DYLD_PRINT_LIBRARIES and a non-existent .sim, with and
+     without DYLD_LIBRARY_PATH); with the static archives #433 ships since 43f6efd7 the same probe shows no library
+     dependency. Unless --no-dyld-path, the directories of the .sim's <ExternalLibraries> are put on
+     DYLD_LIBRARY_PATH for the simulation (the Linux runner does the same with LD_LIBRARY_PATH); the archives need
+     --no-dyld-path.
   4. The folder the kernel resolved for LibraryDirectory="modelica://OpenIPSL/Resources/Library" is read from the
      .sim's <ExternalLibraries> path and from the link line (keep_<Short>.ninja) and written to
      wsm_library_folder_used, next to the folders present in the package (wsm_library_folders_present) and the
-     SHA-256 of every .dylib in them. This is the folder-lookup measurement of the ARM record.
+     SHA-256 of every library (.dylib or .a) in them. This is the folder-lookup measurement of the ARM record.
 """
 import argparse
 import hashlib
@@ -535,14 +537,15 @@ def mach_o_section(exe, dirs, libnames):
 
 
 def library_folders(pkg):
-    """Every folder below Resources/Library with the SHA-256 of its shared libraries."""
+    """Every folder below Resources/Library with the SHA-256 of its libraries: shared libraries, import libraries and
+    the static archives that OpenIPSL #433 ships for macOS since 43f6efd7."""
     root = os.path.join(pkg, "Resources", "Library")
     out = {}
     for d in sorted(os.listdir(root)):
         p = os.path.join(root, d)
         if os.path.isdir(p):
             libs = {f: sha256(os.path.join(p, f)) for f in sorted(os.listdir(p))
-                    if f.endswith((".dylib", ".so", ".dll", ".lib"))}
+                    if f.endswith((".dylib", ".a", ".so", ".dll", ".lib"))}
             out[d] = libs
     return out
 
