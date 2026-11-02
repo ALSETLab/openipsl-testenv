@@ -17,7 +17,7 @@ patch and no build: see "With the shipped libraries" below.
 |---|---|
 | `SETUP.md` | How to image a card with 64-bit Raspberry Pi OS, reach the Pi by SSH key from a desktop and run `provision_pi.sh`: the steps before anything below, written for a reader who starts from an empty card |
 | `scripts/provision_pi.sh` | Provisioning of a fresh 64-bit Raspberry Pi OS image (needs sudo once): build tools, OpenModelica 1.27.2 from `build.openmodelica.org/apt trixie stable` (packages `omc omlibrary`), first MSL load |
-| `scripts/make_pkg.sh` | Package under test: a `git archive` of the checkout's HEAD, plus the installed `Resources/Library/aarch64-linux`, plus a `COMMIT` file |
+| `scripts/make_pkg.sh` | Package under test: a `git archive` of the checkout's HEAD with a `COMMIT` file (hash, subject, branch). From `43f6efd7` on the archive holds the shipped `Resources/Library/aarch64-linux` and the script stops if the working tree's copies differ; on `b05fa044` it copies the installed, untracked folder in |
 | `scripts/probe_folders.sh`, `scripts/folder_probe.c`, `scripts/FolderProbe/package.mo` | Which `Resources/Library/<folder>` omc links and loads. Eight layouts; each copy of `libFolderProbe.so` returns its own folder number |
 | `scripts/omc_verify_pi.py`, `scripts/run_all_om_pi.sh` | The 15 contract runs plus checks, extras, timing, binding and self-comparison (port of the macOS `omc_verify_macos.py` / `run_all_om_macos.sh`; same run list, `.mos` text, signals, grids and metrics fields) |
 | `scripts/armhf/` | 32-bit ARM cross build without sudo: `make_sysroot.sh` (unpacks the armhf libc/libgcc `.deb` files and `lld-19`), `toolchain_armhf.cmake` (processor `armv7l`), `toolchain_armhf_on_aarch64_kernel.cmake` (processor `aarch64`, as a 32-bit userland on a 64-bit kernel reports), `run_armhf.sh` (ctest emulator through the unpacked loader) |
@@ -42,7 +42,8 @@ WIN_RECORD=$PWD/records/report/verification_round2/openmodelica nohup bash scrip
 
 The hashes are those of `Resources/Library/README.md`. The rebuild is optional: it runs the C tests (6 of 6) and
 reinstalls the libraries, which with gcc 14.2.0 are bit-identical, so `git status` prints nothing (measured on
-2026-11-01). `WIN_RECORD` feeds only the self-comparison step (`compare`) against the Windows record (the zip attached to the
+2026-11-01). If another tool chain gives other bytes, `make_pkg.sh` stops instead of packaging them: the runs always
+test the shipped libraries (restore them with `git -C OpenIPSL checkout -- OpenIPSL/Resources/Library/aarch64-linux`). `WIN_RECORD` feeds only the self-comparison step (`compare`) against the Windows record (the zip attached to the
 comment of 2026-10-25 on OpenIPSL#433).
 
 ## How to reproduce the record run (2026-11-01, `b05fa044` with the patches)

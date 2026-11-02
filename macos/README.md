@@ -53,7 +53,7 @@ contract, same metrics fields, so the three platforms compare run by run).
    (`run_all_om_macos.sh` exports `OPENMODELICALIBRARY=$HOME/arm-verify/om/libs/omlibrary` unless set.)
 5. Comparison against the x64 records. It needs the Windows round-2 record (`verification_record_1244ae93.zip`,
    attached to the comment of 2026-10-25 on OpenIPSL#433) and the Linux record with its `compare_linux.py`, whose
-   statistics functions it imports (`../LINUX_VERIFICATION.md` describes it; the CSV files are in the project's
+   statistics functions it imports (`../linux_record/LINUX_VERIFICATION.md` describes it; the CSV files are in the project's
    records, on request):
    `python3.15 scripts/compare_arm.py --sm raw/systemmodeler/record --om raw/openmodelica/record --om-raw build/om_runs --win <report>/verification_round2 --linux <report>/linux --out raw/comparison_final`
 

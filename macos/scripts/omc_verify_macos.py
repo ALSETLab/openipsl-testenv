@@ -716,8 +716,12 @@ def do_binding():
     it tried (LC_RPATH entries, or DYLD_LIBRARY_PATH). Link time: the executable is relinked with the generated
     makefile and ld64's -t (trace every file loaded), which names the library file the linker used."""
     res = {}
-    for key, cls, stop, n, so in (('SCRX9', T + '.SCRX9.SCRX9', 0.1, 20, 'libSCRX9.dylib'),
-                                  ('GFL_Fault', T + '.GFM.GFL_Fault', 0.001, 100, 'libGFM_GFL_IBR.dylib')):
+    libdir = os.path.join(CFG['pkg'], 'Resources', 'Library', LIBDIR)
+    for key, cls, stop, n, stem in (('SCRX9', T + '.SCRX9.SCRX9', 0.1, 20, 'SCRX9'),
+                                    ('GFL_Fault', T + '.GFM.GFL_Fault', 0.001, 100, 'GFM_GFL_IBR')):
+        # the library in the package: a dylib (built here, the 2026-10-31 run) or the static archive #433 ships since
+        # 43f6efd7, which is linked into the executable (then dyld has nothing to load and the traces stay empty)
+        so = 'lib%s.dylib' % stem if os.path.isfile(os.path.join(libdir, 'lib%s.dylib' % stem)) else 'lib%s.a' % stem
         d = os.path.join(CFG['build'], 'binding_' + key)
         if os.path.isdir(d):
             shutil.rmtree(d)
@@ -729,7 +733,6 @@ def do_binding():
         env = {'DYLD_PRINT_LIBRARIES': '1', 'DYLD_PRINT_SEARCHING': '1'}
         log, wall, _ = run_omc(d, mos, CFG['cap'], extra_env=env)
         rec, _ = parse_record(log)
-        stem = so[3:-6]
         in_omc_log = [l.strip() for l in log.splitlines() if 'dyld' in l and (stem in l or 'search' in l.lower())][:30]
         # the executable by hand, same environment: dyld's search and the file it loaded
         exe = os.path.join(d, key)
@@ -751,9 +754,10 @@ def do_binding():
         mk = sh(['make', '-f', key + '.makefile', 'omc_main_target', 'MODELICAUSERCFLAGS=-Wl,-t'], cwd=d)
         with open(os.path.join(d, 'link_trace.txt'), 'w', encoding='utf-8') as fh:
             fh.write(mk)
-        link_lines = [l.strip() for l in mk.splitlines() if stem in l and not l.lstrip().startswith(('clang', '/usr/bin/clang', 'cc '))]
+        link_lines = [l.strip() for l in mk.splitlines() if ('lib' + stem) in l and not l.lstrip().startswith(('clang', '/usr/bin/clang', 'cc '))]
         res[key] = {'simulate_ok': bool(rec and 'The simulation finished successfully' in rec['messages']),
                     'omc_wall_s': round(wall, 2), 'library': so,
+                    'library_kind': 'static archive' if so.endswith('.a') else 'dylib',
                     'dyld_lines_in_omc_log': in_omc_log, 'executable_by_hand_without_DYLD_LIBRARY_PATH': hand,
                     'binding': binding, 'link_time_trace': link_lines,
                     'relinked_otool_L': [l.strip() for l in sh(['otool', '-L', exe]).splitlines() if stem in l]}

@@ -12,7 +12,7 @@ empty microSD card (image, SSH, provisioning).
 
 | Platform | Folder | Tools | First used | Record |
 |---|---|---|---|---|
-| Linux x86-64 (Ubuntu 24.04 in WSL2) | this folder (`provision/`, `tests/`, `windows/`) | Dymola, OpenModelica, System Modeler | 2026-10-25 | [`LINUX_VERIFICATION.md`](LINUX_VERIFICATION.md) (a copy of the project's record) |
+| Linux x86-64 (Ubuntu 24.04 in WSL2) | this folder (`provision/`, `tests/`, `windows/`) | Dymola, OpenModelica, System Modeler | 2026-10-25 | [`linux_record/LINUX_VERIFICATION.md`](linux_record/LINUX_VERIFICATION.md) (a copy of the project's record, with its figures) |
 | macOS Apple Silicon (arm64) | [`macos/`](macos/README.md) | System Modeler, OpenModelica built from source | 2026-10-31 | [`macos/ARM_MACOS_VERIFICATION.md`](macos/ARM_MACOS_VERIFICATION.md) (a copy); release `arm-macos-2026-10-31` holds the MSL for omc and the raw OpenModelica results |
 | Linux aarch64 (Raspberry Pi 400, Raspberry Pi OS trixie) | [`raspberrypi/`](raspberrypi/README.md), machine setup in [`raspberrypi/SETUP.md`](raspberrypi/SETUP.md) | OpenModelica 1.27.2 from the OpenModelica arm64 apt repository, gcc 14 and clang 19 builds, plus a 32-bit `armhf` cross build (`scripts/armhf/`); no System Modeler or Dymola for Linux arm64 | 2026-11-01 | [`raspberrypi/ARM_LINUX_AARCH64_VERIFICATION.md`](raspberrypi/ARM_LINUX_AARCH64_VERIFICATION.md) (a copy) |
 
@@ -144,7 +144,8 @@ tests/smoke/                   distro, shipped libraries, one smoke test per too
 tests/dymola/, tests/openmodelica/, tests/systemmodeler/
                                the full IEEE/CIGRE test set per tool (each folder has its README)
 site.env.example               the site settings template (copy to site.env, which git ignores)
-LINUX_VERIFICATION.md          a copy of the Linux verification record (machine paths replaced by placeholders)
+linux_record/                  a copy of the Linux verification record with its figures (machine paths replaced by
+                               placeholders)
 macos/                         the macOS Apple Silicon kit (its README, scripts, patches, environment record and a
                                copy of its verification record)
 raspberrypi/                   the Raspberry Pi (Linux aarch64) kit: SETUP.md, README, scripts (with armhf/),
