@@ -49,7 +49,7 @@ wsl.exe -d openipsl-verify-24.04 -e bash <kit>/tests/systemmodeler/run_analysis.
 `run_all.sh` alone makes only the 15 contract runs. The record in `report/linux/systemmodeler/` also needs the other
 five lines, in this order: the default-g++ control runs, the validation, the b48d49e8 diagnostics, the probes and the
 analysis (the synthesis, `report/linux/compare_linux.py`, reads the diagnostics for the two native-SCRX runs).
-(`<kit>` = the kit folder as seen from WSL, for example `/mnt/c/git/openipsl-linux-testenv`; `<pkg>` =
+(`<kit>` = the kit folder as seen from WSL, for example `/mnt/c/git/openipsl-testenv`; `<pkg>` =
 `/home/<user>/cigre_verify/pkg/<commit>/OpenIPSL` from `tests/export_package.sh`; `<record>` = the record folder of
 this tool, for example `<records>/systemmodeler`; the Windows round-2 record = `<windows records>/systemmodeler`
 (`WINDOWS_RECORD_ROOT` in `site.env`); `<windows raw>` = `WINDOWS_RAW_ROOT` in `site.env`. The last argument of
