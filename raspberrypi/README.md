@@ -7,6 +7,10 @@ trixie). Wolfram ships no System Modeler for Linux arm64, so this machine has no
 is `ARM_LINUX_AARCH64_VERIFICATION.md`; on the Pi it is at `~/arm-verify/`. Start with `SETUP.md` if the Pi is not yet imaged
 and provisioned.
 
+Since `43f6efd7` (2026-11-01) #433 ships the `aarch64-linux` libraries, built on this Pi from `b05fa044` plus the
+patches below; they are byte for byte the libraries of the record run. A checkout of the pull request now needs no
+patch and no build: see "With the shipped libraries" below.
+
 ## Contents
 
 | Path | What it is |
@@ -21,11 +25,27 @@ and provisioned.
 | `scripts/runs.json` | The contract run list (reference copy; `omc_verify_pi.py` carries the same list in code) |
 | `scripts/fma_diff.py` | Worst difference per signal between two CSV records of the same runs (the FMA control against the record) |
 | `scripts/compare_arm.py` | Comparison against Windows round 2, Linux x86_64 and (with `--macos` / `--macos-json`) the macOS arm64 record. It imports `report/linux/compare_linux.py` from `<root>/records/report/linux/` |
-| `patches/0001..0003` | The three CMake commits of the ARM work (platform folders; `-ffp-contract=off`; macOS install names). As pushed to #433 (`3da33828`, `34985981`, `053f0a75` on `b05fa044`, 2026-11-01); since then `git clone --branch feature/ieee-cigre-dll` already contains them, and `git am` is only needed on an older checkout |
+| `patches/0001..0003` | The three CMake commits of the ARM work (platform folders; `-ffp-contract=off`; macOS install names). As pushed to #433 (`3da33828`, `34985981`, `053f0a75` on `b05fa044`, 2026-11-01); since then `git clone --branch feature/ieee-cigre-dll` already contains them (0003 later replaced by the static archives of `6165c7f0`), and `git am` is only needed to repeat the record run on `b05fa044` |
 | `env/ENVIRONMENT_2026-11-01.txt` | Machine, OS, toolchain and package versions of the record run |
 | `ARM_LINUX_AARCH64_VERIFICATION.md` | The record (a copy of `~/arm-verify/ARM_LINUX_AARCH64_VERIFICATION.md`) |
 
-## How to reproduce (as the Pi login user, from `~/arm-verify/`, with this folder copied to `~/arm-verify/kit-raspberrypi/`)
+## With the shipped libraries (as the Pi login user, from `~/arm-verify/`, with this folder copied to `~/arm-verify/kit-raspberrypi/`)
+
+```
+git clone --branch feature/ieee-cigre-dll https://github.com/OpenIPSL/OpenIPSL.git OpenIPSL
+sha256sum OpenIPSL/OpenIPSL/Resources/Library/aarch64-linux/*.so
+sh OpenIPSL/OpenIPSL/Resources/C-Sources/IEEE_CIGRE/build_linux64.sh build/ieee_cigre
+git -C OpenIPSL status --short OpenIPSL/Resources/Library
+bash scripts/make_pkg.sh OpenIPSL pkg/record
+WIN_RECORD=$PWD/records/report/verification_round2/openmodelica nohup bash scripts/run_all_om_pi.sh pkg/record/OpenIPSL raw/openmodelica/record build/om_runs > raw/openmodelica/run_all_nohup.log 2>&1 &
+```
+
+The hashes are those of `Resources/Library/README.md`. The rebuild is optional: it runs the C tests (6 of 6) and
+reinstalls the libraries, which with gcc 14.2.0 are bit-identical, so `git status` prints nothing (measured on
+2026-11-01). `WIN_RECORD` feeds only the self-comparison step (`compare`) against the Windows record (the zip attached to the
+comment of 2026-10-25 on OpenIPSL#433).
+
+## How to reproduce the record run (2026-11-01, `b05fa044` with the patches)
 
 ```
 git clone --branch feature/ieee-cigre-dll https://github.com/OpenIPSL/OpenIPSL.git OpenIPSL
