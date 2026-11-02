@@ -36,12 +36,14 @@ contract, same metrics fields, so the three platforms compare run by run).
    ```
    cmake -S OpenIPSL/OpenIPSL/Resources/C-Sources/IEEE_CIGRE -B build/ieee_cigre -DCMAKE_BUILD_TYPE=Release
    cmake --build build/ieee_cigre && ctest --test-dir build/ieee_cigre --output-on-failure && cmake --install build/ieee_cigre
-   git -C OpenIPSL status --short OpenIPSL/Resources/Library
+   git -C OpenIPSL diff --stat --exit-code -- OpenIPSL/Resources/Library || git -C OpenIPSL checkout -- OpenIPSL/Resources/Library
    ```
    ctest runs 8 tests (on macOS also `two_archives_test`, which links both archives in both orders). The install
    rewrites the archives in both folders; with the same tool chain they are bit-identical (measured with Xcode 27.2,
-   Apple clang 21.0.0, CMake 4.4.5), so `git status` prints nothing. Another Xcode may give other bytes; the runs below
-   then use the rebuilt archives. No FMA instructions: `otool -tv ... | grep -c fmadd` prints 0.
+   Apple clang 21.0.0, CMake 4.4.5), so the last line prints nothing. With another Xcode it may list the archives as
+   changed: the rebuild is then not reproducible with that tool chain (worth reporting), and the same line restores
+   the shipped archives, so the runs below always test the shipped files. No FMA instructions:
+   `otool -tv ... | grep -c fmadd` prints 0.
 3. System Modeler, the 15 contract runs (one kernel at a time):
    `bash scripts/run_all_macos.sh OpenIPSL/OpenIPSL raw/systemmodeler/record --work build/wsm_runs --no-dyld-path`
    (`--no-dyld-path` runs the executable without `DYLD_LIBRARY_PATH`: the archives are linked into it. Without the
