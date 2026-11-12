@@ -1,5 +1,6 @@
 # Site settings name licence servers and local paths: never shared.
 site.env
+site.*.env
 # Step logs of a provisioning run (copied into the verification record when they matter).
 logs/
 __pycache__/

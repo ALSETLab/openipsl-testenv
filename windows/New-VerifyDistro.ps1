@@ -24,6 +24,10 @@
 
 .EXAMPLE
   powershell -NoProfile -ExecutionPolicy Bypass -File windows\New-VerifyDistro.ps1 -SkipCreate -Steps 20
+
+.EXAMPLE
+  powershell -NoProfile -ExecutionPolicy Bypass -File windows\New-VerifyDistro.ps1 -SiteEnv site.nightly.env -Steps 00,10
+  A second distro (its name and OM_CHANNEL=nightly in site.nightly.env) with only the base and OpenModelica steps.
 #>
 [CmdletBinding()]
 param(
