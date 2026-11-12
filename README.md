@@ -179,6 +179,35 @@ Reported to Wolfram on 2026-10-26; on 2026-10-27 Wolfram confirmed it and announ
 matches the wrapper's run. If it does, drop the wrapper from `provision/30_systemmodeler.sh` and the
 `setCompilerPath` lines, and rewrite this section and trap 1 of `tests/systemmodeler/README.md` as history.
 
+### A nightly distro beside the verification one
+
+The verification environment pins one OpenModelica release (`OM_VERSION`) and is not touched afterwards. To try a
+development build of OpenModelica against the same models, for example when a change announced for the next release
+(a new error, a changed default) has to be confirmed first hand before the release exists, create a second,
+throwaway distro from the apt `nightly` channel instead of changing the first one:
+
+1. Copy `site.env` to `site.nightly.env` (git ignores `site.*.env`), give the distro another `DISTRO_NAME`
+   (for example `openipsl-nightly-24.04`) and set `OM_CHANNEL=nightly`. `OM_VERSION` is then ignored.
+2. Create it with the base and OpenModelica steps only; it needs no vendor installers and no licences:
+
+   ```
+   powershell -NoProfile -ExecutionPolicy Bypass -File windows\New-VerifyDistro.ps1 -SiteEnv site.nightly.env -Steps 00,10
+   ```
+
+   Step 10 then adds `deb [...] https://build.openmodelica.org/apt noble nightly`, installs the newest `omc` and
+   `omlibrary` (versions like `1.28.0~dev-NNNN-g<commit>-1`, NNNN the build number) and appends the version
+   installed to `/var/lib/openipsl-kit/omc_version` in the distro, since nothing pins it.
+3. To move to a newer build later, as root in that distro:
+   `apt-get update && apt-get install --only-upgrade omc omlibrary`, then read `omc --version`. Which
+   OpenModelica commit a build holds is in its version string (`g<commit>`); compare it with the commit you are
+   waiting for on GitHub (`repos/OpenModelica/OpenModelica/compare/<build commit>...<commit>`: status `behind` or
+   `identical` means the build includes it).
+
+The nightly distro is not the verification environment: its omc changes with every upgrade, so results from it are
+dated with the build number and never enter a verification record in place of a release's. Remove it with
+`wsl --unregister <its name>` when done. First used on 2026-11-11 for the Real-equality error of OpenModelica
+1.28.0 (OpenIPSL/OpenIPSL#455), with the `omc` package `1.28.0~dev-1860-ge89ef0a-1`.
+
 ### Reusing the distro
 
 To reuse the environment on another computer of your own, `wsl --export openipsl-verify-24.04 <file>.tar` and
